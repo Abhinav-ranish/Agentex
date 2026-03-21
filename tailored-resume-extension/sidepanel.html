@@ -31,6 +31,13 @@
       </div>
     </div>
 
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="import">Import</button>
+      <button class="tab-btn" data-tab="editor">Editor</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+    </div>
+
     <!-- Status Banner -->
     <div id="status-banner" class="status-banner warning" style="margin: 16px 24px 0; display: none;">
       <span class="material-icons">info</span>
@@ -51,240 +58,450 @@
       </div>
     </div>
 
-    <!-- Main View -->
-    <div class="main-content" id="main-view">
+    <!-- ==================== IMPORT TAB ==================== -->
+    <div class="tab-pane active" id="tab-import">
+      <div class="main-content">
 
-      <!-- Resume Upload -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">description</span>
-          <h2>Resume</h2>
-        </div>
-        <div class="upload-zone" id="upload-zone">
-          <label class="upload-label" for="resume-upload">
-            <span class="material-icons upload-icon">cloud_upload</span>
-            <span class="upload-text">Drop LaTeX file here or click to browse</span>
-            <span class="upload-hint">.tex files only</span>
-          </label>
-          <input type="file" id="resume-upload" accept=".tex" hidden>
-        </div>
-        <div class="file-status" id="file-status"></div>
-      </div>
-
-      <!-- AI Model -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">memory</span>
-          <h2>AI Model</h2>
-        </div>
-        <select class="select-input" id="model-select"></select>
-        <div class="model-info" id="model-info" style="margin-top: 8px;"></div>
-      </div>
-
-      <!-- Knowledge Base -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">school</span>
-          <h2>Knowledge Base</h2>
-          <span class="section-hint">Optional</span>
-        </div>
-        <textarea class="input-area small" id="kb-input"
-          placeholder="Additional projects, skills, or experience for AI to reference..."></textarea>
-      </div>
-
-      <!-- Tailoring Instructions -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">tune</span>
-          <h2>Tailoring Instructions</h2>
-        </div>
-        <div class="instruction-group">
-          <label class="instruction-label">Focus Areas</label>
-          <p class="instruction-hint">Select which sections to optimize</p>
-          <div class="checkbox-group">
-            <label class="checkbox-item"><input type="checkbox" id="focus-skills" checked><span
-                class="checkbox-text">Skills</span></label>
-            <label class="checkbox-item"><input type="checkbox" id="focus-experience" checked><span
-                class="checkbox-text">Experience</span></label>
-            <label class="checkbox-item"><input type="checkbox" id="focus-summary" checked><span
-                class="checkbox-text">Summary</span></label>
-            <label class="checkbox-item"><input type="checkbox" id="focus-projects"><span
-                class="checkbox-text">Projects</span></label>
+        <!-- Resume Upload -->
+        <div class="import-section">
+          <div class="section-title">Upload Resume</div>
+          <div class="section-desc">Upload your existing resume to get started</div>
+          <div class="upload-zone drop-zone-sm" id="upload-zone">
+            <label class="upload-label" for="resume-upload">
+              <span class="material-icons upload-icon">cloud_upload</span>
+              <span class="upload-text">Drop file here or click to browse</span>
+              <span class="upload-hint">.tex, .pdf, .docx files</span>
+            </label>
+            <input type="file" id="resume-upload" accept=".tex,.pdf,.docx" hidden>
           </div>
-        </div>
-        <div class="instruction-group">
-          <label class="instruction-label">Preserve Content</label>
-          <div class="checkbox-group">
-            <label class="checkbox-item"><input type="checkbox" id="preserve-education" checked><span
-                class="checkbox-text">Education</span></label>
-            <label class="checkbox-item"><input type="checkbox" id="preserve-contact" checked><span
-                class="checkbox-text">Contact Info</span></label>
+          <div class="upload-progress" id="upload-progress" style="display:none;">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
           </div>
+          <div class="file-status" id="file-status"></div>
         </div>
-        <div class="instruction-group">
-          <label class="instruction-label">Custom Instructions</label>
-          <textarea class="input-area small" id="custom-instructions"
-            placeholder="e.g., Emphasize leadership roles, focus on Python/ML..."></textarea>
-        </div>
-      </div>
 
-      <!-- Download Name -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">download</span>
-          <h2>Download Filename</h2>
-        </div>
-        <div class="input-group">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <input type="text" class="text-input" id="download-name" placeholder="tailored-resume"
-              style="flex:1; font-family: monospace; font-size:13px;">
-            <span class="instruction-hint" style="white-space:nowrap; flex-shrink:0;">.tex / .pdf</span>
-          </div>
-          <p class="instruction-hint" style="margin-top:4px;">Used when downloading the tailored resume.</p>
-        </div>
-      </div>
+        <div class="import-divider"><span>or</span></div>
 
-      <!-- Feedback -->
-      <div style="display:flex; gap: 8px; padding: 0 0 8px;">
-        <button class="btn-secondary" id="btn-report-bug" style="flex:1;">
-          <span class="material-icons">bug_report</span>
-          Report a Bug
-        </button>
-        <button class="btn-secondary" id="btn-request-feature" style="flex:1;">
-          <span class="material-icons">lightbulb</span>
-          Request a Feature
-        </button>
-      </div>
+        <!-- LinkedIn Import -->
+        <div class="import-section">
+          <div class="section-title">Import from LinkedIn</div>
+          <div class="section-desc">Export your LinkedIn data and upload it here</div>
+          <ol class="linkedin-steps">
+            <li>Go to LinkedIn Settings &gt; Data Privacy</li>
+            <li>Click "Get a copy of your data"</li>
+            <li>Select "Want something in particular?" and choose the data you need</li>
+            <li>Download and upload the ZIP file below</li>
+          </ol>
+          <button class="btn-linkedin" id="btn-linkedin-import">
+            <span class="linkedin-icon">in</span>
+            Upload LinkedIn Data Export
+          </button>
+          <input type="file" id="linkedin-upload" accept=".zip" hidden>
+        </div>
 
+        <div class="import-divider"><span>or</span></div>
+
+        <!-- Start from Scratch -->
+        <div class="import-section">
+          <div class="section-title">Start from Scratch</div>
+          <div class="section-desc">Build your resume manually using the editor</div>
+          <button class="btn-secondary" id="btn-start-scratch" style="width:100%;">
+            <span class="material-icons">edit_note</span>
+            Start from Scratch
+          </button>
+        </div>
+
+      </div>
     </div>
 
-    <!-- Settings View -->
-    <div class="main-content" id="settings-view" style="display:none;">
+    <!-- ==================== EDITOR TAB ==================== -->
+    <div class="tab-pane" id="tab-editor">
+      <div class="main-content">
 
-      <!-- Appearance -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">palette</span>
-          <h2>Appearance</h2>
+        <!-- Empty State -->
+        <div class="editor-empty" id="editor-empty">
+          <span class="material-icons">description</span>
+          <p>No resume data yet.</p>
+          <p>Import a resume or start from scratch to begin editing.</p>
+          <button class="btn-secondary" id="btn-go-import" style="margin-top:16px; width:auto;">
+            <span class="material-icons">arrow_back</span>
+            Go to Import
+          </button>
         </div>
-        <div class="toggle-setting">
-          <div class="toggle-info">
-            <span class="toggle-label">Dark Mode</span>
-            <span class="toggle-desc">Switch between light and dark theme</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="dark-mode-toggle"><span class="slider"></span></label>
-        </div>
-      </div>
 
-      <!-- API Keys -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">vpn_key</span>
-          <h2>API Keys</h2>
-        </div>
-        <div class="settings-group">
-          <div class="input-group">
-            <label>Gemini API Key</label>
-            <div class="input-with-action">
-              <input type="password" class="text-input" id="gemini-key" placeholder="Enter Gemini API key">
-              <button class="btn-icon" id="toggle-gemini-key" title="Show/Hide"><span
-                  class="material-icons">visibility</span></button>
-            </div>
-            <a href="https://aistudio.google.com/apikey" target="_blank" class="link-small">Get Gemini API Key</a>
-          </div>
-          <div class="input-group">
-            <label>Claude API Key <span class="optional-badge">Optional</span></label>
-            <div class="input-with-action">
-              <input type="password" class="text-input" id="claude-key" placeholder="Enter Claude API key">
-              <button class="btn-icon" id="toggle-claude-key" title="Show/Hide"><span
-                  class="material-icons">visibility</span></button>
-            </div>
-            <a href="https://console.anthropic.com/settings/keys" target="_blank" class="link-small">Get Claude API
-              Key</a>
-          </div>
-          <div class="input-group">
-            <label>Groq API Key <span class="optional-badge">Optional</span></label>
-            <div class="input-with-action">
-              <input type="password" class="text-input" id="groq-key" placeholder="Enter Groq API key">
-              <button class="btn-icon" id="toggle-groq-key" title="Show/Hide"><span
-                  class="material-icons">visibility</span></button>
-            </div>
-            <a href="https://console.groq.com/keys" target="_blank" class="link-small">Get Groq API Key</a>
-          </div>
-          <div class="input-group">
-            <label>OpenRouter API Key <span class="optional-badge">Optional</span></label>
-            <div class="input-with-action">
-              <input type="password" class="text-input" id="openrouter-key" placeholder="Enter OpenRouter API key">
-              <button class="btn-icon" id="toggle-openrouter-key" title="Show/Hide"><span
-                  class="material-icons">visibility</span></button>
-            </div>
-            <a href="https://openrouter.ai/keys" target="_blank" class="link-small">Get OpenRouter API Key</a>
-          </div>
-        </div>
-      </div>
+        <!-- Editor Content -->
+        <div id="editor-content" hidden>
 
-      <!-- Guardrails -->
-      <div class="section">
-        <div class="section-title">
-          <span class="material-icons section-icon">shield</span>
-          <h2>AI Guardrails</h2>
-        </div>
-        <div class="toggle-setting">
-          <div class="toggle-info">
-            <span class="toggle-label">Strict Mode</span>
-            <span class="toggle-desc">Prevent AI from adding skills not in your resume</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="strict-mode" checked><span class="slider"></span></label>
-        </div>
-        <div class="toggle-setting">
-          <div class="toggle-info">
-            <span class="toggle-label">Preserve Education</span>
-            <span class="toggle-desc">Keep education section unchanged</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="guard-education" checked><span class="slider"></span></label>
-        </div>
-        <div class="toggle-setting">
-          <div class="toggle-info">
-            <span class="toggle-label">Preserve Contact</span>
-            <span class="toggle-desc">Keep name, email, phone unchanged</span>
-          </div>
-          <label class="switch"><input type="checkbox" id="guard-contact" checked><span class="slider"></span></label>
-        </div>
-        <div class="instruction-group" style="margin-top: 12px;">
-          <label class="instruction-label">Hard Rules</label>
-          <p class="instruction-hint">Rules the AI must always follow (one per line)</p>
-          <textarea class="input-area small" id="guardrail-rules" rows="3"
-            placeholder="DO NOT exceed 1 page&#10;Keep all dates exactly as-is&#10;Never remove any projects"></textarea>
-        </div>
-      </div>
-
-      <!-- System Prompt -->
-      <div class="section">
-        <div class="section-title clickable" id="toggle-prompt-section">
-          <span class="material-icons section-icon">terminal</span>
-          <h2>System Prompt</h2>
-          <span class="section-hint"><span class="material-icons" style="font-size:14px;">expand_more</span></span>
-        </div>
-        <div id="prompt-section-content" style="display:none;">
-          <p class="instruction-hint" style="margin-bottom: 8px;">This is the prompt sent to the AI. Edit to customize
-            or click Reset to restore the default.</p>
-          <textarea class="input-area" id="system-prompt" rows="12"
-            style="font-size: 12px; line-height: 1.5;"></textarea>
-          <div style="display: flex; gap: 8px; margin-top: 8px;">
-            <button class="btn-secondary" id="btn-reset-prompt" style="flex: 1; padding: 6px 12px; font-size: 12px;">
-              <span class="material-icons" style="font-size: 14px;">restart_alt</span>
-              Reset to Default
+          <!-- Top Actions -->
+          <div class="editor-actions">
+            <button class="btn-secondary btn-sm" id="btn-reimport">
+              <span class="material-icons" style="font-size:14px;">upload</span>
+              Re-import
+            </button>
+            <button class="btn-primary btn-sm" id="btn-generate-latex" style="flex:1;">
+              <span class="material-icons" style="font-size:14px;">code</span>
+              Generate LaTeX
             </button>
           </div>
-        </div>
-      </div>
 
-      <!-- Actions -->
-      <div style="display:flex; flex-direction:column; gap: 8px; padding: 0 0 8px;">
-        <button class="btn-primary" id="btn-save-settings">
-          <span class="material-icons">save</span>
-          Save Settings
-        </button>
+          <!-- Contact Section -->
+          <div class="accordion-section open">
+            <button class="accordion-header">
+              <span class="material-icons" style="font-size:18px;">person</span>
+              Contact Information
+              <span class="material-icons accordion-arrow">expand_more</span>
+            </button>
+            <div class="accordion-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>Full Name</label>
+                  <input type="text" data-field="contact.name" placeholder="John Doe">
+                </div>
+                <div class="form-field">
+                  <label>Email</label>
+                  <input type="email" data-field="contact.email" placeholder="john@example.com">
+                </div>
+                <div class="form-field">
+                  <label>Phone</label>
+                  <input type="tel" data-field="contact.phone" placeholder="+1 (555) 000-0000">
+                </div>
+                <div class="form-field">
+                  <label>Location</label>
+                  <input type="text" data-field="contact.location" placeholder="City, State">
+                </div>
+                <div class="form-field">
+                  <label>LinkedIn</label>
+                  <input type="url" data-field="contact.linkedin" placeholder="linkedin.com/in/johndoe">
+                </div>
+                <div class="form-field">
+                  <label>Website</label>
+                  <input type="url" data-field="contact.website" placeholder="johndoe.com">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Section -->
+          <div class="accordion-section">
+            <button class="accordion-header">
+              <span class="material-icons" style="font-size:18px;">subject</span>
+              Summary
+              <span class="material-icons accordion-arrow">expand_more</span>
+            </button>
+            <div class="accordion-body">
+              <div class="form-field">
+                <label>Professional Summary</label>
+                <textarea data-field="summary" rows="4" placeholder="Brief professional summary..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Experience Section -->
+          <div class="accordion-section">
+            <button class="accordion-header">
+              <span class="material-icons" style="font-size:18px;">work</span>
+              Experience
+              <span class="material-icons accordion-arrow">expand_more</span>
+            </button>
+            <div class="accordion-body">
+              <div id="experience-list" class="repeatable-list"></div>
+              <button class="btn-add" data-add="experience">
+                <span class="material-icons" style="font-size:16px;">add</span>
+                Add Experience
+              </button>
+            </div>
+          </div>
+
+          <!-- Education Section -->
+          <div class="accordion-section">
+            <button class="accordion-header">
+              <span class="material-icons" style="font-size:18px;">school</span>
+              Education
+              <span class="material-icons accordion-arrow">expand_more</span>
+            </button>
+            <div class="accordion-body">
+              <div id="education-list" class="repeatable-list"></div>
+              <button class="btn-add" data-add="education">
+                <span class="material-icons" style="font-size:16px;">add</span>
+                Add Education
+              </button>
+            </div>
+          </div>
+
+          <!-- Skills Section -->
+          <div class="accordion-section">
+            <button class="accordion-header">
+              <span class="material-icons" style="font-size:18px;">build</span>
+              Skills
+              <span class="material-icons accordion-arrow">expand_more</span>
+            </button>
+            <div class="accordion-body">
+              <div class="form-field" style="margin-bottom:12px;">
+                <label>Technical Skills</label>
+                <div class="tag-input" data-field="skills.technical" data-placeholder="Add technical skill..."></div>
+              </div>
+              <div class="form-field" style="margin-bottom:12px;">
+                <label>Soft Skills</label>
+                <div class="tag-input" data-field="skills.soft" data-placeholder="Add soft skill..."></div>
+              </div>
+              <div class="form-field">
+                <label>Languages</label>
+                <div class="tag-input" data-field="skills.languages" data-placeholder="Add language..."></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Certifications Section -->
+          <div class="accordion-section">
+            <button class="accordion-header">
+              <span class="material-icons" style="font-size:18px;">verified</span>
+              Certifications
+              <span class="material-icons accordion-arrow">expand_more</span>
+            </button>
+            <div class="accordion-body">
+              <div id="certifications-list" class="repeatable-list"></div>
+              <button class="btn-add" data-add="certifications">
+                <span class="material-icons" style="font-size:16px;">add</span>
+                Add Certification
+              </button>
+            </div>
+          </div>
+
+          <!-- Projects Section -->
+          <div class="accordion-section">
+            <button class="accordion-header">
+              <span class="material-icons" style="font-size:18px;">folder</span>
+              Projects
+              <span class="material-icons accordion-arrow">expand_more</span>
+            </button>
+            <div class="accordion-body">
+              <div id="projects-list" class="repeatable-list"></div>
+              <button class="btn-add" data-add="projects">
+                <span class="material-icons" style="font-size:16px;">add</span>
+                Add Project
+              </button>
+            </div>
+          </div>
+
+        </div><!-- /editor-content -->
+      </div>
+    </div>
+
+    <!-- ==================== SETTINGS TAB ==================== -->
+    <div class="tab-pane" id="tab-settings">
+      <div class="main-content">
+
+        <!-- AI Model -->
+        <div class="section">
+          <div class="section-title">
+            <span class="material-icons section-icon">memory</span>
+            <h2>AI Model</h2>
+          </div>
+          <select class="select-input" id="model-select"></select>
+          <div class="model-info" id="model-info" style="margin-top: 8px;"></div>
+        </div>
+
+        <!-- Knowledge Base -->
+        <div class="section">
+          <div class="section-title">
+            <span class="material-icons section-icon">school</span>
+            <h2>Knowledge Base</h2>
+            <span class="section-hint">Optional</span>
+          </div>
+          <textarea class="input-area small" id="kb-input"
+            placeholder="Additional projects, skills, or experience for AI to reference..."></textarea>
+        </div>
+
+        <!-- Tailoring Instructions -->
+        <div class="section">
+          <div class="section-title">
+            <span class="material-icons section-icon">tune</span>
+            <h2>Tailoring Instructions</h2>
+          </div>
+          <div class="instruction-group">
+            <label class="instruction-label">Focus Areas</label>
+            <p class="instruction-hint">Select which sections to optimize</p>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" id="focus-skills" checked><span
+                  class="checkbox-text">Skills</span></label>
+              <label class="checkbox-item"><input type="checkbox" id="focus-experience" checked><span
+                  class="checkbox-text">Experience</span></label>
+              <label class="checkbox-item"><input type="checkbox" id="focus-summary" checked><span
+                  class="checkbox-text">Summary</span></label>
+              <label class="checkbox-item"><input type="checkbox" id="focus-projects"><span
+                  class="checkbox-text">Projects</span></label>
+            </div>
+          </div>
+          <div class="instruction-group">
+            <label class="instruction-label">Preserve Content</label>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><input type="checkbox" id="preserve-education" checked><span
+                  class="checkbox-text">Education</span></label>
+              <label class="checkbox-item"><input type="checkbox" id="preserve-contact" checked><span
+                  class="checkbox-text">Contact Info</span></label>
+            </div>
+          </div>
+          <div class="instruction-group">
+            <label class="instruction-label">Custom Instructions</label>
+            <textarea class="input-area small" id="custom-instructions"
+              placeholder="e.g., Emphasize leadership roles, focus on Python/ML..."></textarea>
+          </div>
+        </div>
+
+        <!-- Download Name -->
+        <div class="section">
+          <div class="section-title">
+            <span class="material-icons section-icon">download</span>
+            <h2>Download Filename</h2>
+          </div>
+          <div class="input-group">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="text" class="text-input" id="download-name" placeholder="tailored-resume"
+                style="flex:1; font-family: monospace; font-size:13px;">
+              <span class="instruction-hint" style="white-space:nowrap; flex-shrink:0;">.tex / .pdf</span>
+            </div>
+            <p class="instruction-hint" style="margin-top:4px;">Used when downloading the tailored resume.</p>
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div class="section">
+          <div class="section-title">
+            <span class="material-icons section-icon">palette</span>
+            <h2>Appearance</h2>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Dark Mode</span>
+              <span class="toggle-desc">Switch between light and dark theme</span>
+            </div>
+            <label class="switch"><input type="checkbox" id="dark-mode-toggle"><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <!-- API Keys -->
+        <div class="section">
+          <div class="section-title">
+            <span class="material-icons section-icon">vpn_key</span>
+            <h2>API Keys</h2>
+          </div>
+          <div class="settings-group">
+            <div class="input-group">
+              <label>Gemini API Key</label>
+              <div class="input-with-action">
+                <input type="password" class="text-input" id="gemini-key" placeholder="Enter Gemini API key">
+                <button class="btn-icon" id="toggle-gemini-key" title="Show/Hide"><span
+                    class="material-icons">visibility</span></button>
+              </div>
+              <a href="https://aistudio.google.com/apikey" target="_blank" class="link-small">Get Gemini API Key</a>
+            </div>
+            <div class="input-group">
+              <label>Claude API Key <span class="optional-badge">Optional</span></label>
+              <div class="input-with-action">
+                <input type="password" class="text-input" id="claude-key" placeholder="Enter Claude API key">
+                <button class="btn-icon" id="toggle-claude-key" title="Show/Hide"><span
+                    class="material-icons">visibility</span></button>
+              </div>
+              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="link-small">Get Claude API
+                Key</a>
+            </div>
+            <div class="input-group">
+              <label>Groq API Key <span class="optional-badge">Optional</span></label>
+              <div class="input-with-action">
+                <input type="password" class="text-input" id="groq-key" placeholder="Enter Groq API key">
+                <button class="btn-icon" id="toggle-groq-key" title="Show/Hide"><span
+                    class="material-icons">visibility</span></button>
+              </div>
+              <a href="https://console.groq.com/keys" target="_blank" class="link-small">Get Groq API Key</a>
+            </div>
+            <div class="input-group">
+              <label>OpenRouter API Key <span class="optional-badge">Optional</span></label>
+              <div class="input-with-action">
+                <input type="password" class="text-input" id="openrouter-key" placeholder="Enter OpenRouter API key">
+                <button class="btn-icon" id="toggle-openrouter-key" title="Show/Hide"><span
+                    class="material-icons">visibility</span></button>
+              </div>
+              <a href="https://openrouter.ai/keys" target="_blank" class="link-small">Get OpenRouter API Key</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guardrails -->
+        <div class="section">
+          <div class="section-title">
+            <span class="material-icons section-icon">shield</span>
+            <h2>AI Guardrails</h2>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Strict Mode</span>
+              <span class="toggle-desc">Prevent AI from adding skills not in your resume</span>
+            </div>
+            <label class="switch"><input type="checkbox" id="strict-mode" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Preserve Education</span>
+              <span class="toggle-desc">Keep education section unchanged</span>
+            </div>
+            <label class="switch"><input type="checkbox" id="guard-education" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <span class="toggle-label">Preserve Contact</span>
+              <span class="toggle-desc">Keep name, email, phone unchanged</span>
+            </div>
+            <label class="switch"><input type="checkbox" id="guard-contact" checked><span class="slider"></span></label>
+          </div>
+          <div class="instruction-group" style="margin-top: 12px;">
+            <label class="instruction-label">Hard Rules</label>
+            <p class="instruction-hint">Rules the AI must always follow (one per line)</p>
+            <textarea class="input-area small" id="guardrail-rules" rows="3"
+              placeholder="DO NOT exceed 1 page&#10;Keep all dates exactly as-is&#10;Never remove any projects"></textarea>
+          </div>
+        </div>
+
+        <!-- System Prompt -->
+        <div class="section">
+          <div class="section-title clickable" id="toggle-prompt-section">
+            <span class="material-icons section-icon">terminal</span>
+            <h2>System Prompt</h2>
+            <span class="section-hint"><span class="material-icons" style="font-size:14px;">expand_more</span></span>
+          </div>
+          <div id="prompt-section-content" style="display:none;">
+            <p class="instruction-hint" style="margin-bottom: 8px;">This is the prompt sent to the AI. Edit to customize
+              or click Reset to restore the default.</p>
+            <textarea class="input-area" id="system-prompt" rows="12"
+              style="font-size: 12px; line-height: 1.5;"></textarea>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button class="btn-secondary" id="btn-reset-prompt" style="flex: 1; padding: 6px 12px; font-size: 12px;">
+                <span class="material-icons" style="font-size: 14px;">restart_alt</span>
+                Reset to Default
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; flex-direction:column; gap: 8px; padding: 0 0 8px;">
+          <button class="btn-primary" id="btn-save-settings">
+            <span class="material-icons">save</span>
+            Save Settings
+          </button>
+        </div>
+
+        <!-- Feedback -->
+        <div style="display:flex; gap: 8px; padding: 0 0 8px;">
+          <button class="btn-secondary" id="btn-report-bug" style="flex:1;">
+            <span class="material-icons">bug_report</span>
+            Report a Bug
+          </button>
+          <button class="btn-secondary" id="btn-request-feature" style="flex:1;">
+            <span class="material-icons">lightbulb</span>
+            Request a Feature
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -293,6 +510,8 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="services/resume-editor.js"></script>
+  <script src="services/latex-template.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 
