@@ -32,6 +32,7 @@ RUN npm ci --production && npm cache clean --force
 # Copy server code
 COPY server.js ./
 COPY .env.example ./.env.example
+COPY parsers/ ./parsers/
 
 # Create temp directories
 RUN mkdir -p /tmp/agentex/pdf
