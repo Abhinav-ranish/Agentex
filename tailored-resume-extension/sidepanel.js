@@ -276,8 +276,8 @@
 
     if (ext === 'pdf' || ext === 'docx') {
       const progress = document.getElementById('upload-progress');
-      const progressFill = document.getElementById('upload-progress-fill');
-      if (progress) progress.removeAttribute('hidden');
+      const progressFill = document.getElementById('progress-fill');
+      if (progress) progress.style.display = '';
       if (progressFill) progressFill.style.width = '30%';
 
       const storage = await chrome.storage.local.get(['selectedProvider', 'selectedModelId', 'geminiApiKey', 'claudeApiKey', 'groqApiKey', 'openrouterApiKey']);
@@ -312,7 +312,7 @@
         showToast('Upload failed: ' + err.message, 'error');
       } finally {
         if (progressFill) progressFill.style.width = '100%';
-        setTimeout(() => { if (progress) progress.setAttribute('hidden', ''); if (progressFill) progressFill.style.width = '0'; }, 500);
+        setTimeout(() => { if (progress) progress.style.display = 'none'; if (progressFill) progressFill.style.width = '0'; }, 500);
       }
       updateBanner();
       return;
@@ -482,46 +482,15 @@
 
   // ── LinkedIn ──
   function setupLinkedIn() {
-    const loginBtn = document.getElementById('linkedin-login-btn');
-    const logoutBtn = document.getElementById('linkedin-logout');
-    const profileSection = document.getElementById('linkedin-profile');
-    const exportSection = document.getElementById('linkedin-export-section');
-    const linkedinFile = document.getElementById('linkedin-file');
-    const linkedinUpload = document.getElementById('linkedin-upload');
+    const importBtn = document.getElementById('btn-linkedin-import');
+    const linkedinFile = document.getElementById('linkedin-upload');
 
-    if (typeof LinkedInAuth !== 'undefined') {
-      LinkedInAuth.getAuthState().then(state => {
-        if (state.authenticated) showLinkedInLoggedIn();
-      });
-    }
-
-    loginBtn?.addEventListener('click', async () => {
-      if (typeof LinkedInAuth === 'undefined') { showToast('LinkedIn auth not available', 'error'); return; }
-      const result = await LinkedInAuth.login();
-      if (result.success) { showLinkedInLoggedIn(); showToast('Signed in with LinkedIn', 'success'); }
-      else showToast('LinkedIn sign-in failed: ' + result.error, 'error');
-    });
-
-    logoutBtn?.addEventListener('click', async () => {
-      if (typeof LinkedInAuth !== 'undefined') await LinkedInAuth.logout();
-      loginBtn?.removeAttribute('hidden');
-      profileSection?.setAttribute('hidden', '');
-      exportSection?.setAttribute('hidden', '');
-      showToast('Signed out of LinkedIn', 'info');
-    });
-
-    linkedinUpload?.addEventListener('click', () => linkedinFile?.click());
+    importBtn?.addEventListener('click', () => linkedinFile?.click());
     linkedinFile?.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       await handleLinkedinExport(file);
     });
-
-    function showLinkedInLoggedIn() {
-      loginBtn?.setAttribute('hidden', '');
-      profileSection?.removeAttribute('hidden');
-      exportSection?.removeAttribute('hidden');
-    }
   }
 
   async function handleLinkedinExport(file) {
@@ -549,7 +518,7 @@
 
   // ── Editor Actions ──
   function setupEditorActions() {
-    document.getElementById('editor-generate-latex')?.addEventListener('click', async () => {
+    document.getElementById('btn-generate-latex')?.addEventListener('click', async () => {
       const data = typeof ResumeEditor !== 'undefined' ? ResumeEditor.getData() : null;
       if (!data) { showToast('No resume data in editor', 'error'); return; }
       if (typeof generateLatex === 'undefined') { showToast('LaTeX template not available', 'error'); return; }
@@ -559,17 +528,21 @@
       updateBanner();
     });
 
-    document.getElementById('manual-entry-btn')?.addEventListener('click', () => {
+    document.getElementById('btn-start-scratch')?.addEventListener('click', () => {
       if (typeof createEmptyResume !== 'undefined' && typeof ResumeEditor !== 'undefined') {
         ResumeEditor.setData(createEmptyResume());
         document.querySelector('.tab-btn[data-tab="editor"]')?.click();
       }
     });
 
-    document.getElementById('editor-import-btn')?.addEventListener('click', () => {
+    document.getElementById('btn-reimport')?.addEventListener('click', () => {
       if (typeof ResumeEditor !== 'undefined' && ResumeEditor.getData()) {
         if (!confirm('Re-importing will replace your current editor data. Continue?')) return;
       }
+      document.querySelector('.tab-btn[data-tab="import"]')?.click();
+    });
+
+    document.getElementById('btn-go-import')?.addEventListener('click', () => {
       document.querySelector('.tab-btn[data-tab="import"]')?.click();
     });
   }
