@@ -190,12 +190,13 @@ async function handleMessage(message, sender) {
     // ---- STATUS ----
     case 'GET_STATUS': {
       const stored = await chrome.storage.local.get([
-        'resumeLatex', 'originalLatex', 'lastJobDescription', 'savedJD',
+        'resumeLatex', 'originalLatex', 'resumeStructured', 'lastJobDescription', 'savedJD',
         'geminiApiKey', 'claudeApiKey', 'groqApiKey', 'openrouterApiKey',
         'selectedProvider', 'selectedModelId'
       ]);
 
       const resumeLatex = stored.resumeLatex || stored.originalLatex || null;
+      const resumeStructured = stored.resumeStructured || null;
       const provider = stored.selectedProvider || 'gemini';
       const modelId = stored.selectedModelId || 'gemini-2.5-flash';
       const hasApiKey = !!(stored.geminiApiKey || stored.claudeApiKey || stored.groqApiKey || stored.openrouterApiKey);
@@ -203,6 +204,7 @@ async function handleMessage(message, sender) {
 
       return {
         hasResume: !!resumeLatex,
+        hasStructuredResume: !!resumeStructured,
         hasApiKey,
         provider,
         modelId,
@@ -320,6 +322,17 @@ async function handleMessage(message, sender) {
       } catch (error) {
         return { error: `PDF compilation failed: ${error.message}` };
       }
+    }
+
+    // ---- STRUCTURED RESUME ----
+    case 'GET_STRUCTURED_RESUME': {
+      const { resumeStructured } = await chrome.storage.local.get('resumeStructured');
+      return { resume: resumeStructured || null };
+    }
+
+    case 'SAVE_STRUCTURED_RESUME': {
+      await chrome.storage.local.set({ resumeStructured: message.resume });
+      return { success: true };
     }
 
     // ---- SETTINGS CHANGED ----
