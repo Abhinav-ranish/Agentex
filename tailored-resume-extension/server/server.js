@@ -118,6 +118,7 @@ app.get('/', (req, res) => {
       'GET /health': 'Health check',
       'POST /compile': 'Compile LaTeX to PDF',
       'POST /parse/pdf': 'Extract text from PDF',
+      'POST /parse/docx': 'Extract text from DOCX',
       'GET /status': 'Server stats',
     }
   });
@@ -230,6 +231,19 @@ app.post('/parse/pdf', upload.single('file'), async (req, res) => {
   } catch (error) {
     console.error('PDF parse error:', error.message);
     res.status(500).json({ error: 'Failed to parse PDF', details: error.message });
+  }
+});
+
+const { parseDocx } = require('./parsers/docx-parser');
+
+app.post('/parse/docx', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const result = await parseDocx(req.file.buffer);
+    res.json(result);
+  } catch (error) {
+    console.error('DOCX parse error:', error.message);
+    res.status(500).json({ error: 'Failed to parse DOCX', details: error.message });
   }
 });
 
