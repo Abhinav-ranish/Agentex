@@ -223,11 +223,25 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 // ============================================
 
 const { parsePdf } = require('./parsers/pdf-parser');
+const { parseDocx } = require('./parsers/docx-parser');
+const { structureWithAI } = require('./parsers/ai-structurer');
 
 app.post('/parse/pdf', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const result = await parsePdf(req.file.buffer);
+
+    const { provider, apiKey, modelId } = req.body || {};
+    if (provider && apiKey && modelId && result.rawText) {
+      try {
+        const structured = await structureWithAI(result.rawText, provider, apiKey, modelId);
+        return res.json({ ...result, resume: structured, aiStructured: true });
+      } catch (aiError) {
+        console.error('AI structuring failed for PDF:', aiError.message);
+        return res.json({ ...result, structuringFailed: true, structuringError: aiError.message });
+      }
+    }
+
     res.json(result);
   } catch (error) {
     console.error('PDF parse error:', error.message);
@@ -235,12 +249,22 @@ app.post('/parse/pdf', upload.single('file'), async (req, res) => {
   }
 });
 
-const { parseDocx } = require('./parsers/docx-parser');
-
 app.post('/parse/docx', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const result = await parseDocx(req.file.buffer);
+
+    const { provider, apiKey, modelId } = req.body || {};
+    if (provider && apiKey && modelId && result.rawText) {
+      try {
+        const structured = await structureWithAI(result.rawText, provider, apiKey, modelId);
+        return res.json({ ...result, resume: structured, aiStructured: true });
+      } catch (aiError) {
+        console.error('AI structuring failed for DOCX:', aiError.message);
+        return res.json({ ...result, structuringFailed: true, structuringError: aiError.message });
+      }
+    }
+
     res.json(result);
   } catch (error) {
     console.error('DOCX parse error:', error.message);
