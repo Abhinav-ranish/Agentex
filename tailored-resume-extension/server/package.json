@@ -9,12 +9,17 @@
         "test": "echo 'curl -X POST http://localhost:3000/compile -H Content-Type:application/json -d {\"latex\":\"\\\\documentclass{article}\\\\begin{document}Hello\\\\end{document}\"}' && echo 'Run the curl above to test'"
     },
     "dependencies": {
+        "adm-zip": "^0.5.16",
         "cors": "^2.8.5",
+        "csv-parse": "^6.2.1",
         "dotenv": "^16.4.5",
         "express": "^4.21.0",
         "express-rate-limit": "^7.4.0",
         "helmet": "^7.1.0",
+        "mammoth": "^1.12.0",
         "morgan": "^1.10.0",
+        "multer": "^2.1.1",
+        "pdf-parse": "^2.4.5",
         "uuid": "^10.0.0"
     },
     "engines": {
