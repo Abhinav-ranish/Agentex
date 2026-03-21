@@ -9,14 +9,17 @@
     "storage",
     "contextMenus",
     "unlimitedStorage",
-    "scripting"
+    "scripting",
+    "identity"
   ],
   "host_permissions": [
     "https://generativelanguage.googleapis.com/*",
     "https://api.anthropic.com/*",
     "https://agentex.onrender.com/*",
     "https://api.agentex.sriujjwalreddy.com/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "https://www.linkedin.com/*",
+    "https://api.linkedin.com/*"
   ],
   "action": {
     "default_icon": {
