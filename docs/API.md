@@ -636,4 +636,38 @@ fetch('http://localhost:3000/compile', {
 
 ---
 
+## Resume Parse Endpoints
+
+### POST /parse/pdf
+Uploads a PDF file and extracts text. Optionally structures it into resume JSON via AI.
+
+**Body:** `multipart/form-data`
+- `file` (required): PDF file (max 10MB)
+- `provider` (optional): AI provider name (gemini, claude, groq, openrouter)
+- `apiKey` (optional): API key for the provider
+- `modelId` (optional): Model ID to use
+
+**Response:** `{ success, rawText, resume?, structuringFailed?, pageCount? }`
+
+### POST /parse/docx
+Uploads a DOCX file and extracts text. Optionally structures it into resume JSON via AI.
+
+**Body:** `multipart/form-data`
+- `file` (required): DOCX file (max 10MB)
+- `provider` (optional): AI provider name
+- `apiKey` (optional): API key
+- `modelId` (optional): Model ID
+
+**Response:** `{ success, rawText, resume?, structuringFailed?, warnings? }`
+
+### POST /parse/linkedin
+Uploads a LinkedIn data export ZIP and returns structured resume JSON.
+
+**Body:** `multipart/form-data`
+- `file` (required): ZIP file from LinkedIn data export
+
+**Response:** `{ success, resume, foundFiles, warnings, error? }`
+
+---
+
 This API documentation provides comprehensive coverage of all system endpoints and integration points. For additional technical details, refer to the source code and inline documentation.
