@@ -599,7 +599,7 @@
         try {
             const s = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
             state.hasApiKey = s.hasApiKey;
-            state.hasResume = s.hasResume;
+            state.hasResume = s.hasResume || s.hasStructuredResume;
             state.originalLatex = s.originalLatex;
             state.provider = s.provider || 'gemini';
             state.modelId = s.modelId || 'gemini-2.5-flash';
