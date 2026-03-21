@@ -341,6 +341,26 @@ async function handleMessage(message, sender) {
       return { success: true };
     }
 
+    // ---- STRUCTURE RESUME TEXT (client-side AI structuring) ----
+    case 'STRUCTURE_RESUME_TEXT': {
+      const aiService = await getAIService();
+      if (!aiService) return { error: 'AI Service not available. Check your API key in Settings.' };
+      await aiService.loadSettings();
+
+      try {
+        const prompt = `You are a resume parser. Given this raw text from a resume, extract and return a JSON object with this structure: {"contact":{"name":"","email":"","phone":"","location":"","linkedin":"","website":""},"summary":"","experience":[{"title":"","company":"","location":"","startDate":"","endDate":"","description":"","highlights":[]}],"education":[{"institution":"","degree":"","field":"","startDate":"","endDate":"","gpa":"","highlights":[]}],"skills":{"technical":[],"soft":[],"languages":[]},"certifications":[{"name":"","issuer":"","date":""}],"projects":[{"name":"","description":"","technologies":[],"url":""}]}. Return ONLY valid JSON. Extract all info present, leave empty strings for missing fields. Return empty arrays for sections with no data.\n\nResume text:\n${message.rawText}`;
+
+        const result = await aiService._callWithFallback(prompt);
+        const jsonMatch = result.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return { resume: JSON.parse(jsonMatch[0]) };
+        }
+        return { error: 'Could not parse AI response as JSON' };
+      } catch (err) {
+        return { error: 'AI structuring failed: ' + err.message };
+      }
+    }
+
     default:
       return { error: `Unknown message type: ${type}` };
   }

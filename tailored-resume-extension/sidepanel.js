@@ -280,28 +280,30 @@
       if (progress) progress.style.display = '';
       if (progressFill) progressFill.style.width = '30%';
 
-      const storage = await chrome.storage.local.get(['selectedProvider', 'selectedModelId', 'geminiApiKey', 'claudeApiKey', 'groqApiKey', 'openrouterApiKey']);
-      const provider = storage.selectedProvider || 'gemini';
-      const apiKeyMap = { gemini: 'geminiApiKey', claude: 'claudeApiKey', groq: 'groqApiKey', openrouter: 'openrouterApiKey' };
-      const apiKey = storage[apiKeyMap[provider]] || '';
-      const modelId = storage.selectedModelId || '';
-
       const formData = new FormData();
       formData.append('file', file);
-      if (apiKey) { formData.append('provider', provider); formData.append('apiKey', apiKey); formData.append('modelId', modelId); }
 
       try {
-        if (progressFill) progressFill.style.width = '60%';
+        if (progressFill) progressFill.style.width = '50%';
         const serverUrl = (typeof config !== 'undefined' && config.SERVER_URL) ? config.SERVER_URL : 'http://localhost:3000';
         const resp = await fetch(`${serverUrl}/parse/${ext}`, { method: 'POST', body: formData });
         const result = await resp.json();
-        if (progressFill) progressFill.style.width = '90%';
 
-        if (result.resume) {
-          await chrome.storage.local.set({ resumeStructured: result.resume, resumeFilename: file.name });
-          if (typeof ResumeEditor !== 'undefined') ResumeEditor.setData(result.resume);
-          document.querySelector('.tab-btn[data-tab="editor"]')?.click();
-          showToast('Resume parsed and loaded', 'success');
+        if (result.success && result.rawText) {
+          if (progressFill) progressFill.style.width = '70%';
+          // Ask background service worker to structure via AI (keys stay client-side)
+          const structureResult = await chrome.runtime.sendMessage({ type: 'STRUCTURE_RESUME_TEXT', rawText: result.rawText });
+          if (progressFill) progressFill.style.width = '90%';
+
+          if (structureResult.resume) {
+            await chrome.storage.local.set({ resumeStructured: structureResult.resume, resumeFilename: file.name });
+            if (typeof ResumeEditor !== 'undefined') ResumeEditor.setData(structureResult.resume);
+            document.querySelector('.tab-btn[data-tab="editor"]')?.click();
+            showToast('Resume parsed and structured', 'success');
+          } else {
+            showToast('File parsed but could not auto-structure. ' + (structureResult.error || ''), 'warning');
+            await chrome.storage.local.set({ resumeRawText: result.rawText, resumeFilename: file.name });
+          }
         } else if (result.rawText) {
           showToast('File parsed but could not auto-structure. Raw text available.', 'warning');
           await chrome.storage.local.set({ resumeRawText: result.rawText, resumeFilename: file.name });
