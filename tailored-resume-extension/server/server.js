@@ -119,6 +119,7 @@ app.get('/', (req, res) => {
       'POST /compile': 'Compile LaTeX to PDF',
       'POST /parse/pdf': 'Extract text from PDF',
       'POST /parse/docx': 'Extract text from DOCX',
+      'POST /parse/linkedin': 'Parse LinkedIn data export ZIP',
       'GET /status': 'Server stats',
     }
   });
@@ -244,6 +245,19 @@ app.post('/parse/docx', upload.single('file'), async (req, res) => {
   } catch (error) {
     console.error('DOCX parse error:', error.message);
     res.status(500).json({ error: 'Failed to parse DOCX', details: error.message });
+  }
+});
+
+const { parseLinkedinExport } = require('./parsers/linkedin-parser');
+
+app.post('/parse/linkedin', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const result = parseLinkedinExport(req.file.buffer);
+    res.json(result);
+  } catch (error) {
+    console.error('LinkedIn parse error:', error.message);
+    res.status(500).json({ error: 'Failed to parse LinkedIn export', details: error.message });
   }
 });
 
