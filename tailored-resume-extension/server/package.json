@@ -6,7 +6,7 @@
     "scripts": {
         "start": "node server.js",
         "dev": "NODE_ENV=development node server.js",
-        "test": "echo 'curl -X POST http://localhost:3000/compile -H Content-Type:application/json -d {\"latex\":\"\\\\documentclass{article}\\\\begin{document}Hello\\\\end{document}\"}' && echo 'Run the curl above to test'"
+        "test": "jest --verbose"
     },
     "dependencies": {
         "adm-zip": "^0.5.16",
@@ -25,5 +25,8 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "license": "MIT"
+    "license": "MIT",
+    "devDependencies": {
+        "jest": "^30.3.0"
+    }
 }
