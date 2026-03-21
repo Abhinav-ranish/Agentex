@@ -30,6 +30,10 @@ async function structureWithAI(rawText, provider, apiKey, modelId) {
         generationConfig: { responseMimeType: 'application/json' }
       })
     });
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      throw new Error(`Gemini API error (${resp.status}): ${errBody.slice(0, 200)}`);
+    }
     const data = await resp.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     return JSON.parse(text);
@@ -44,6 +48,10 @@ async function structureWithAI(rawText, provider, apiKey, modelId) {
         messages: [{ role: 'user', content: userMessage }]
       })
     });
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      throw new Error(`Claude API error (${resp.status}): ${errBody.slice(0, 200)}`);
+    }
     const data = await resp.json();
     const text = data.content?.[0]?.text;
     return JSON.parse(extractJson(text));
@@ -60,6 +68,10 @@ async function structureWithAI(rawText, provider, apiKey, modelId) {
         response_format: { type: 'json_object' }
       })
     });
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      throw new Error(`${provider === 'groq' ? 'Groq' : 'OpenRouter'} API error (${resp.status}): ${errBody.slice(0, 200)}`);
+    }
     const data = await resp.json();
     const text = data.choices?.[0]?.message?.content;
     return JSON.parse(text);

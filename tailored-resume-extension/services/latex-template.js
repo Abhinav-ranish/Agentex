@@ -105,7 +105,16 @@ function generateLatex(resume) {
 
 function escLatex(str) {
   if (!str) return '';
-  return str.replace(/\\/g, '\\textbackslash{}').replace(/[&%$#_{}]/g, m => '\\' + m).replace(/~/g, '\\textasciitilde{}').replace(/\^/g, '\\textasciicircum{}');
+  return str
+    .replace(/[&%$#_{}~^\\]/g, m => {
+      const map = {
+        '&': '\\&', '%': '\\%', '$': '\\$', '#': '\\#',
+        '_': '\\_', '{': '\\{', '}': '\\}',
+        '~': '\\textasciitilde{}', '^': '\\textasciicircum{}',
+        '\\': '\\textbackslash{}'
+      };
+      return map[m];
+    });
 }
 
 if (typeof module !== 'undefined' && module.exports) { module.exports = { generateLatex, escLatex }; }
