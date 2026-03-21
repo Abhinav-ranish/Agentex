@@ -40,3 +40,4 @@ CLAUDE.md
 # any node modules 
 *node_modules*
 .DS_Store
+.worktrees/
