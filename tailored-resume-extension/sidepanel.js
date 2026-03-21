@@ -27,8 +27,11 @@
 
   async function init() {
     setupDarkMode();
+    setupTabs();
     setupModelSelector();
     setupUpload();
+    setupLinkedIn();
+    setupEditorActions();
     setupSettings();
     setupSettingsToggle();
     setupPromptSection();
@@ -37,6 +40,10 @@
     setupStorageSync();
     setupPanelToggle();
     await restoreState();
+    if (typeof ResumeEditor !== 'undefined') {
+      const editorContainer = document.getElementById('editor-content');
+      if (editorContainer) ResumeEditor.init(editorContainer);
+    }
     updateBanner();
   }
 
@@ -223,29 +230,95 @@
     });
   }
 
+  // ── Tabs ──
+  function setupTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+    document.querySelectorAll('[data-switch-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.dataset.switchTab;
+        document.querySelector(`.tab-btn[data-tab="${tabName}"]`)?.click();
+      });
+    });
+  }
+
   // ── Upload ──
   function setupUpload() {
     if (!uploadZone) return;
     uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-    uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
-    fileInput?.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+    uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFileUpload(e.dataTransfer.files[0]); });
+    fileInput?.addEventListener('change', e => { if (e.target.files[0]) handleFileUpload(e.target.files[0]); });
+    if (fileInput) fileInput.accept = '.tex,.pdf,.docx';
   }
 
-  async function handleFile(file) {
-    if (!file || !file.name.endsWith('.tex')) {
-      showToast('Please upload a .tex file.', 'error');
+  async function handleFileUpload(file) {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if (ext === 'tex') {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        await chrome.storage.local.set({ resumeLatex: e.target.result, resumeFilename: file.name });
+        if (fileStatus) fileStatus.innerHTML = `<div class="file-status-item success"><span class="material-icons">check_circle</span><span>${file.name} (${(file.size / 1024).toFixed(1)} KB)</span></div>`;
+        showToast('LaTeX resume loaded', 'success');
+        updateBanner();
+      };
+      reader.readAsText(file);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const latex = e.target.result;
-      await chrome.storage.local.set({ resumeLatex: latex, resumeFilename: file.name });
-      if (fileStatus) fileStatus.innerHTML = `<div class="file-status-item success"><span class="material-icons">check_circle</span><span>${file.name} (${(file.size / 1024).toFixed(1)} KB)</span></div>`;
-      showToast('Resume uploaded.', 'success');
+
+    if (ext === 'pdf' || ext === 'docx') {
+      const progress = document.getElementById('upload-progress');
+      const progressFill = document.getElementById('upload-progress-fill');
+      if (progress) progress.removeAttribute('hidden');
+      if (progressFill) progressFill.style.width = '30%';
+
+      const storage = await chrome.storage.local.get(['selectedProvider', 'selectedModelId', 'geminiApiKey', 'claudeApiKey', 'groqApiKey', 'openrouterApiKey']);
+      const provider = storage.selectedProvider || 'gemini';
+      const apiKeyMap = { gemini: 'geminiApiKey', claude: 'claudeApiKey', groq: 'groqApiKey', openrouter: 'openrouterApiKey' };
+      const apiKey = storage[apiKeyMap[provider]] || '';
+      const modelId = storage.selectedModelId || '';
+
+      const formData = new FormData();
+      formData.append('file', file);
+      if (apiKey) { formData.append('provider', provider); formData.append('apiKey', apiKey); formData.append('modelId', modelId); }
+
+      try {
+        if (progressFill) progressFill.style.width = '60%';
+        const serverUrl = (typeof config !== 'undefined' && config.SERVER_URL) ? config.SERVER_URL : 'http://localhost:3000';
+        const resp = await fetch(`${serverUrl}/parse/${ext}`, { method: 'POST', body: formData });
+        const result = await resp.json();
+        if (progressFill) progressFill.style.width = '90%';
+
+        if (result.resume) {
+          await chrome.storage.local.set({ resumeStructured: result.resume, resumeFilename: file.name });
+          if (typeof ResumeEditor !== 'undefined') ResumeEditor.setData(result.resume);
+          document.querySelector('.tab-btn[data-tab="editor"]')?.click();
+          showToast('Resume parsed and loaded', 'success');
+        } else if (result.rawText) {
+          showToast('File parsed but could not auto-structure. Raw text available.', 'warning');
+          await chrome.storage.local.set({ resumeRawText: result.rawText, resumeFilename: file.name });
+        } else {
+          showToast(result.error || 'Failed to parse file', 'error');
+        }
+      } catch (err) {
+        showToast('Upload failed: ' + err.message, 'error');
+      } finally {
+        if (progressFill) progressFill.style.width = '100%';
+        setTimeout(() => { if (progress) progress.setAttribute('hidden', ''); if (progressFill) progressFill.style.width = '0'; }, 500);
+      }
       updateBanner();
-    };
-    reader.readAsText(file);
+      return;
+    }
+
+    showToast(`Unsupported file format: .${ext}`, 'error');
   }
 
   // ── Settings ──
@@ -407,6 +480,100 @@
     });
   }
 
+  // ── LinkedIn ──
+  function setupLinkedIn() {
+    const loginBtn = document.getElementById('linkedin-login-btn');
+    const logoutBtn = document.getElementById('linkedin-logout');
+    const profileSection = document.getElementById('linkedin-profile');
+    const exportSection = document.getElementById('linkedin-export-section');
+    const linkedinFile = document.getElementById('linkedin-file');
+    const linkedinUpload = document.getElementById('linkedin-upload');
+
+    if (typeof LinkedInAuth !== 'undefined') {
+      LinkedInAuth.getAuthState().then(state => {
+        if (state.authenticated) showLinkedInLoggedIn();
+      });
+    }
+
+    loginBtn?.addEventListener('click', async () => {
+      if (typeof LinkedInAuth === 'undefined') { showToast('LinkedIn auth not available', 'error'); return; }
+      const result = await LinkedInAuth.login();
+      if (result.success) { showLinkedInLoggedIn(); showToast('Signed in with LinkedIn', 'success'); }
+      else showToast('LinkedIn sign-in failed: ' + result.error, 'error');
+    });
+
+    logoutBtn?.addEventListener('click', async () => {
+      if (typeof LinkedInAuth !== 'undefined') await LinkedInAuth.logout();
+      loginBtn?.removeAttribute('hidden');
+      profileSection?.setAttribute('hidden', '');
+      exportSection?.setAttribute('hidden', '');
+      showToast('Signed out of LinkedIn', 'info');
+    });
+
+    linkedinUpload?.addEventListener('click', () => linkedinFile?.click());
+    linkedinFile?.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      await handleLinkedinExport(file);
+    });
+
+    function showLinkedInLoggedIn() {
+      loginBtn?.setAttribute('hidden', '');
+      profileSection?.removeAttribute('hidden');
+      exportSection?.removeAttribute('hidden');
+    }
+  }
+
+  async function handleLinkedinExport(file) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const serverUrl = (typeof config !== 'undefined' && config.SERVER_URL) ? config.SERVER_URL : 'http://localhost:3000';
+      const resp = await fetch(`${serverUrl}/parse/linkedin`, { method: 'POST', body: formData });
+      const result = await resp.json();
+
+      if (result.success && result.resume) {
+        const existing = await chrome.storage.local.get('resumeStructured');
+        if (existing.resumeStructured && !confirm('This will replace your current resume data. Continue?')) return;
+        await chrome.storage.local.set({ resumeStructured: result.resume, resumeFilename: 'LinkedIn Import' });
+        if (typeof ResumeEditor !== 'undefined') ResumeEditor.setData(result.resume);
+        document.querySelector('.tab-btn[data-tab="editor"]')?.click();
+        showToast(result.warnings?.length ? `Imported with warnings: ${result.warnings[0]}` : 'LinkedIn data imported successfully', result.warnings?.length ? 'warning' : 'success');
+      } else {
+        showToast(result.error || 'Failed to parse LinkedIn export', 'error');
+      }
+    } catch (err) {
+      showToast('LinkedIn import failed: ' + err.message, 'error');
+    }
+  }
+
+  // ── Editor Actions ──
+  function setupEditorActions() {
+    document.getElementById('editor-generate-latex')?.addEventListener('click', async () => {
+      const data = typeof ResumeEditor !== 'undefined' ? ResumeEditor.getData() : null;
+      if (!data) { showToast('No resume data in editor', 'error'); return; }
+      if (typeof generateLatex === 'undefined') { showToast('LaTeX template not available', 'error'); return; }
+      const latex = generateLatex(data);
+      await chrome.storage.local.set({ resumeLatex: latex });
+      showToast('LaTeX generated from editor data. Ready to tailor!', 'success');
+      updateBanner();
+    });
+
+    document.getElementById('manual-entry-btn')?.addEventListener('click', () => {
+      if (typeof createEmptyResume !== 'undefined' && typeof ResumeEditor !== 'undefined') {
+        ResumeEditor.setData(createEmptyResume());
+        document.querySelector('.tab-btn[data-tab="editor"]')?.click();
+      }
+    });
+
+    document.getElementById('editor-import-btn')?.addEventListener('click', () => {
+      if (typeof ResumeEditor !== 'undefined' && ResumeEditor.getData()) {
+        if (!confirm('Re-importing will replace your current editor data. Continue?')) return;
+      }
+      document.querySelector('.tab-btn[data-tab="import"]')?.click();
+    });
+  }
+
   // ── State ──
   async function restoreState() {
     const data = await chrome.storage.local.get([
@@ -511,8 +678,8 @@
   // ── Banner ──
   async function updateBanner() {
     if (!banner) return;
-    const data = await chrome.storage.local.get(['resumeLatex', 'geminiApiKey', 'claudeApiKey', 'groqApiKey', 'openrouterApiKey']);
-    const hasResume = !!data.resumeLatex;
+    const data = await chrome.storage.local.get(['resumeLatex', 'resumeStructured', 'geminiApiKey', 'claudeApiKey', 'groqApiKey', 'openrouterApiKey']);
+    const hasResume = !!(data.resumeLatex || data.resumeStructured);
     const hasKey = !!(data.geminiApiKey || data.claudeApiKey || data.groqApiKey || data.openrouterApiKey);
 
     if (!hasResume && !hasKey) {
